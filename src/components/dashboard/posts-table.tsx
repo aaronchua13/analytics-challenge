@@ -9,7 +9,7 @@ import {
   useReactTable,
   SortingState,
 } from '@tanstack/react-table';
-import { ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUpDown, ArrowUp, ArrowDown, FileText } from 'lucide-react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { useQuery, keepPreviousData } from '@tanstack/react-query';
 import { getPostsAction } from '@/app/actions/posts';
@@ -394,9 +394,19 @@ export default function PostsTable({
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-24 text-center"
+                  className="h-64 text-center"
                 >
-                  No results.
+                  <div className="flex flex-col items-center justify-center text-muted-foreground space-y-3">
+                    <div className="bg-muted rounded-full p-4">
+                      <FileText className="h-8 w-8 opacity-50" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">No posts found</p>
+                      <p className="text-sm mt-1">
+                        Try adjusting your filters or search query.
+                      </p>
+                    </div>
+                  </div>
                 </TableCell>
               </TableRow>
             )}

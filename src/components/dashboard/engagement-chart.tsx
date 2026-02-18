@@ -239,6 +239,13 @@ const InnerChart = ({
             scale={yScale}
             stroke="var(--border)"
             tickStroke="var(--border)"
+            tickFormat={(val) => 
+              new Intl.NumberFormat('en-US', {
+                notation: "compact",
+                compactDisplay: "short",
+                maximumFractionDigits: 1,
+              }).format(Number(val))
+            }
             tickLabelProps={() => ({
               fill: "var(--muted-foreground)",
               fontSize: 11,
@@ -343,14 +350,56 @@ export default function EngagementChart({ data }: { data: DailyMetric[] }) {
   });
 
   if (!data || data.length === 0) {
+    // Generate dummy data for the empty state visualization
+    const emptyStateData = Array.from({ length: 7 }, (_, i) => ({
+      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+      engagement: 20 + Math.random() * 30,
+      reach: 40 + Math.random() * 40,
+      impressions: 0,
+      saves: 0,
+      shares: 0,
+      comments: 0,
+      likes: 0
+    }));
+
     return (
-      <Card>
+      <Card className="relative overflow-hidden">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle>Engagement Overview</CardTitle>
         </CardHeader>
-        <CardContent className="pl-2">
-          <div className="flex h-[350px] items-center justify-center text-muted-foreground">
-            No data available for chart
+        <CardContent className="pl-0 relative">
+          {/* Blurred Chart Background */}
+          <div className="h-[350px] w-full opacity-20 pointer-events-none filter blur-sm select-none">
+            <ParentSize>
+              {({ width, height }) =>
+                width > 0 && height > 0 ? (
+                  <InnerChart
+                    width={width}
+                    height={height}
+                    data={emptyStateData}
+                    chartViewType="area"
+                    showTooltip={() => {}}
+                    hideTooltip={() => {}}
+                    tooltipOpen={false}
+                    TooltipInPortal={TooltipInPortal}
+                  />
+                ) : null
+              }
+            </ParentSize>
+          </div>
+
+          {/* Empty State Overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-background/50 backdrop-blur-[2px] z-10">
+            <div className="bg-background border rounded-full p-4 shadow-sm mb-4">
+              <BarChart3 className="h-8 w-8 text-muted-foreground" />
+            </div>
+            <h3 className="text-lg font-semibold text-foreground">No Data Available</h3>
+            <p className="text-sm text-muted-foreground max-w-[250px] text-center mt-2">
+              Engagement metrics will appear here once you start tracking your social media performance.
+            </p>
+            <Button variant="outline" className="mt-6" size="sm">
+              Learn how to connect
+            </Button>
           </div>
         </CardContent>
       </Card>

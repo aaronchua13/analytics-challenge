@@ -1,8 +1,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, FileText, Activity, BarChart3, TrendingUp, TrendingDown } from "lucide-react";
+import { Users, FileText, Activity, BarChart3, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { SummaryStats } from "@/lib/api";
 
 export default function SummaryCards({ stats }: { stats: SummaryStats }) {
+  const getTrendIcon = (value: number) => {
+    if (value > 0) return <TrendingUp className="h-3 w-3 text-green-500 mr-1" />;
+    if (value < 0) return <TrendingDown className="h-3 w-3 text-red-500 mr-1" />;
+    return <Minus className="h-3 w-3 text-muted-foreground mr-1" />;
+  };
+
+  const getTrendClass = (value: number) => {
+    if (value > 0) return "text-green-500";
+    if (value < 0) return "text-red-500";
+    return "text-muted-foreground";
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
       <Card>
@@ -13,12 +25,8 @@ export default function SummaryCards({ stats }: { stats: SummaryStats }) {
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalEngagement.toLocaleString()}</div>
           <div className="flex items-center text-xs text-muted-foreground">
-            {stats.trends.engagement > 0 ? (
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-            ) : (
-              <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-            )}
-            <span className={stats.trends.engagement > 0 ? "text-green-500" : "text-red-500"}>
+            {getTrendIcon(stats.trends.engagement)}
+            <span className={getTrendClass(stats.trends.engagement)}>
               {Math.abs(stats.trends.engagement)}%
             </span>
             <span className="ml-1">from last month</span>
@@ -33,12 +41,8 @@ export default function SummaryCards({ stats }: { stats: SummaryStats }) {
         <CardContent>
           <div className="text-2xl font-bold">{stats.avgEngagementRate}%</div>
           <div className="flex items-center text-xs text-muted-foreground">
-             {stats.trends.rate > 0 ? (
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-            ) : (
-              <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-            )}
-            <span className={stats.trends.rate > 0 ? "text-green-500" : "text-red-500"}>
+            {getTrendIcon(stats.trends.rate)}
+            <span className={getTrendClass(stats.trends.rate)}>
               {Math.abs(stats.trends.rate)}%
             </span>
             <span className="ml-1">from last month</span>
@@ -53,12 +57,8 @@ export default function SummaryCards({ stats }: { stats: SummaryStats }) {
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalReach.toLocaleString()}</div>
           <div className="flex items-center text-xs text-muted-foreground">
-             {stats.trends.reach > 0 ? (
-              <TrendingUp className="h-3 w-3 text-green-500 mr-1" />
-            ) : (
-              <TrendingDown className="h-3 w-3 text-red-500 mr-1" />
-            )}
-            <span className={stats.trends.reach > 0 ? "text-green-500" : "text-red-500"}>
+            {getTrendIcon(stats.trends.reach)}
+            <span className={getTrendClass(stats.trends.reach)}>
               {Math.abs(stats.trends.reach)}%
             </span>
             <span className="ml-1">from last month</span>
@@ -73,13 +73,18 @@ export default function SummaryCards({ stats }: { stats: SummaryStats }) {
         <CardContent>
           {stats.topPost ? (
             <>
-              <div className="text-sm font-medium truncate">{stats.topPost.caption}</div>
+              <div className="text-sm font-medium truncate" title={stats.topPost.caption || "No caption"}>
+                {stats.topPost.caption || "No caption"}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {stats.topPost.engagement_rate}% engagement
               </p>
             </>
           ) : (
-            <div className="text-sm text-muted-foreground">No posts yet</div>
+            <div className="text-sm text-muted-foreground flex items-center">
+              <Minus className="h-3 w-3 mr-2" />
+              No posts yet
+            </div>
           )}
         </CardContent>
       </Card>
