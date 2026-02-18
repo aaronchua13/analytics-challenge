@@ -43,7 +43,8 @@ export default function ProfilePage() {
     } else {
       toast.success('Password updated successfully')
       // Reset form
-      e.currentTarget.reset()
+      const form = e.target as HTMLFormElement
+      form.reset()
     }
     setLoading(false)
   }
