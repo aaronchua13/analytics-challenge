@@ -1,15 +1,25 @@
 "use client";
 
+import { motion } from "framer-motion";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Post } from "@/lib/api";
-import { Heart, MessageCircle, Share2, Eye, Bookmark, ExternalLink } from "lucide-react";
+import { 
+  Heart, 
+  MessageCircle, 
+  Share2, 
+  Bookmark, 
+  ExternalLink, 
+  Calendar,
+  BarChart2,
+  Eye,
+  LucideIcon
+} from "lucide-react";
 
 interface PostDetailModalProps {
   post: Post | null;
@@ -17,145 +27,224 @@ interface PostDetailModalProps {
   onClose: () => void;
 }
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: { 
+    opacity: 1,
+    transition: { 
+      staggerChildren: 0.05,
+      delayChildren: 0.1
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { y: 10, opacity: 0 },
+  visible: { 
+    y: 0, 
+    opacity: 1,
+    transition: { type: "spring", stiffness: 300, damping: 24 }
+  }
+} as any;
+
 export default function PostDetailModal({ post, isOpen, onClose }: PostDetailModalProps) {
   if (!post) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl w-[95vw] h-[85vh] p-0 flex flex-col gap-0 overflow-hidden sm:rounded-xl">
-        {/* Header - Fixed */}
-        <DialogHeader className="p-6 border-b bg-background z-10 shrink-0">
-          <div className="flex items-center justify-between pr-8">
-            <div className="space-y-1">
-              <DialogTitle className="text-xl">Post Details</DialogTitle>
-              <DialogDescription>
-                Posted on {new Date(post.posted_at).toLocaleDateString()} via <span className="capitalize font-medium text-foreground">{post.platform}</span>
-              </DialogDescription>
+      <DialogContent className="max-w-2xl w-[95vw] h-[85vh] p-0 gap-0 overflow-hidden border-none shadow-2xl bg-background/95 backdrop-blur-xl flex flex-col">
+        {/* Scrollable Content Container */}
+        <div className="flex-1 overflow-y-auto scrollbar-hide">
+          {/* Header Image Area */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="w-full h-[400px] bg-black/90 relative flex items-center justify-center group overflow-hidden shrink-0"
+          >
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60 z-10 pointer-events-none" />
+            
+            {post.thumbnail_url ? (
+              <motion.img
+                initial={{ scale: 1.1, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                src={post.thumbnail_url}
+                alt="Post content"
+                className="w-full h-full object-contain"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-white/50 gap-3">
+                <div className="p-4 rounded-full bg-white/5 backdrop-blur-sm">
+                  <Eye className="h-8 w-8" />
+                </div>
+                <span className="text-sm font-medium tracking-wide">No Preview</span>
+              </div>
+            )}
+
+            {/* Platform Badge Overlay */}
+            <div className="absolute top-4 left-4 z-20">
+              <Badge variant="secondary" className="backdrop-blur-md bg-white/10 text-white border-white/20 px-3 py-1 text-xs font-medium uppercase tracking-wider shadow-lg">
+                {post.platform}
+              </Badge>
             </div>
-          </div>
-        </DialogHeader>
-        
-        {/* Content - Scrollable/Grid */}
-        <div className="flex-1 grid md:grid-cols-2 overflow-hidden bg-muted/10">
-          {/* Left Column: Image Area */}
-          <div className="bg-black/5 flex items-center justify-center p-4 md:p-8 h-full overflow-hidden border-r">
-            <div className="relative w-full h-full flex items-center justify-center">
-               {post.thumbnail_url ? (
-                /* eslint-disable-next-line @next/next/no-img-element */
-                <img
-                  src={post.thumbnail_url}
-                  alt="Post thumbnail"
-                  className="max-w-full max-h-full object-contain rounded-md shadow-sm"
+
+            {/* Close Button Overlay (Optional if Dialog has one, but good for UX) */}
+          </motion.div>
+
+          {/* Content Details */}
+          <div className="p-6 md:p-8 space-y-8">
+            {/* Header Info */}
+            <div className="flex items-start justify-between gap-4 border-b border-border/40 pb-6">
+              <div className="space-y-1.5">
+                <DialogTitle className="text-2xl font-bold tracking-tight">Post Analysis</DialogTitle>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar className="h-3.5 w-3.5" />
+                  <time>{new Date(post.posted_at).toLocaleDateString(undefined, { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}</time>
+                </div>
+              </div>
+              <Badge variant={getEngagementVariant(post.engagement_rate)} className="font-mono text-sm px-3 py-1 h-8">
+                {post.engagement_rate}% Engagement
+              </Badge>
+            </div>
+
+            <motion.div 
+              variants={containerVariants}
+              initial="hidden"
+              animate="visible"
+              className="space-y-8"
+            >
+              {/* Main Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatCard 
+                  icon={Heart} 
+                  value={post.likes} 
+                  label="Likes" 
+                  color="text-rose-500" 
+                  bg="bg-rose-500/10" 
+                  delay={0}
                 />
-              ) : (
-                <div className="flex flex-col items-center justify-center text-muted-foreground gap-2">
-                  <Eye className="h-12 w-12 opacity-20" />
-                  <span className="text-sm opacity-60">No Preview Available</span>
+                <StatCard 
+                  icon={MessageCircle} 
+                  value={post.comments} 
+                  label="Comments" 
+                  color="text-blue-500" 
+                  bg="bg-blue-500/10"
+                  delay={0.1}
+                />
+                <StatCard 
+                  icon={Share2} 
+                  value={post.shares} 
+                  label="Shares" 
+                  color="text-emerald-500" 
+                  bg="bg-emerald-500/10"
+                  delay={0.2}
+                />
+                <StatCard 
+                  icon={Bookmark} 
+                  value={post.saves} 
+                  label="Saves" 
+                  color="text-amber-500" 
+                  bg="bg-amber-500/10"
+                  delay={0.3}
+                />
+              </div>
+
+              {/* Caption */}
+              <motion.div variants={itemVariants} className="space-y-3">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <span className="w-1 h-4 bg-primary rounded-full"/>
+                  Caption
+                </h3>
+                <div className="p-5 rounded-xl bg-muted/30 border border-border/40 text-base leading-relaxed text-foreground/90 whitespace-pre-wrap">
+                  {post.caption || <span className="text-muted-foreground italic">No caption provided.</span>}
                 </div>
-              )}
-            </div>
+              </motion.div>
+
+              {/* Deep Metrics */}
+              <motion.div variants={itemVariants} className="space-y-3">
+                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                  <span className="w-1 h-4 bg-primary rounded-full"/>
+                  Impact
+                </h3>
+                <div className="bg-card rounded-xl border border-border/40 overflow-hidden">
+                  <div className="p-5 grid grid-cols-2 gap-8 divide-x divide-border/40">
+                    <div className="space-y-1 pr-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm mb-2">
+                        <Eye className="h-4 w-4" /> Reach
+                      </div>
+                      <div className="text-2xl font-bold font-mono">{post.reach.toLocaleString()}</div>
+                    </div>
+                    <div className="space-y-1 pl-4 text-center">
+                      <div className="flex items-center justify-center gap-2 text-muted-foreground text-sm mb-2">
+                        <BarChart2 className="h-4 w-4" /> Impressions
+                      </div>
+                      <div className="text-2xl font-bold font-mono">{post.impressions.toLocaleString()}</div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
+        </div>
 
-          {/* Right Column: Details Area */}
-          <div className="flex flex-col h-full bg-background overflow-hidden">
-            <div className="flex-1 overflow-y-auto p-6 space-y-8">
-              
-              {/* Caption Section */}
-              <div className="space-y-2">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Caption</h4>
-                <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap text-foreground/90">
-                    {post.caption || <span className="text-muted-foreground italic">No caption provided.</span>}
-                  </p>
-                </div>
-              </div>
-
-              {/* Engagement Stats */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Engagement</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <StatCard 
-                    icon={Heart} 
-                    value={post.likes} 
-                    label="Likes" 
-                    className="bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30" 
-                  />
-                  <StatCard 
-                    icon={MessageCircle} 
-                    value={post.comments} 
-                    label="Comments" 
-                    className="bg-blue-50 dark:bg-blue-950/20 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900/30" 
-                  />
-                  <StatCard 
-                    icon={Share2} 
-                    value={post.shares} 
-                    label="Shares" 
-                    className="bg-green-50 dark:bg-green-950/20 text-green-600 dark:text-green-400 border-green-100 dark:border-green-900/30" 
-                  />
-                  <StatCard 
-                    icon={Bookmark} 
-                    value={post.saves} 
-                    label="Saves" 
-                    className="bg-amber-50 dark:bg-amber-950/20 text-amber-600 dark:text-amber-400 border-amber-100 dark:border-amber-900/30" 
-                  />
-                </div>
-              </div>
-
-              {/* Performance Metrics */}
-              <div className="space-y-3">
-                <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Performance</h4>
-                <div className="bg-card border rounded-lg divide-y">
-                  <div className="flex justify-between items-center p-3 px-4">
-                    <span className="text-sm text-muted-foreground">Reach</span>
-                    <span className="font-mono font-medium">{post.reach.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 px-4">
-                    <span className="text-sm text-muted-foreground">Impressions</span>
-                    <span className="font-mono font-medium">{post.impressions.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center p-3 px-4 bg-muted/20">
-                    <span className="text-sm font-medium">Engagement Rate</span>
-                    <span className={`text-sm font-bold px-2 py-0.5 rounded ${getEngagementColor(post.engagement_rate)}`}>
-                      {post.engagement_rate}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Actions - Sticky */}
-            <div className="p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky bottom-0 z-10">
-              {post.permalink ? (
-                <Button className="w-full gap-2 shadow-sm" size="lg" asChild>
-                  <a href={post.permalink} target="_blank" rel="noopener noreferrer">
-                    View on {post.platform} <ExternalLink className="h-4 w-4 opacity-50" />
-                  </a>
-                </Button>
-              ) : (
-                <Button disabled variant="secondary" className="w-full">Link not available</Button>
-              )}
-            </div>
-          </div>
+        {/* Sticky Footer */}
+        <div className="p-6 border-t border-border/40 bg-background/95 backdrop-blur sticky bottom-0 z-20 shrink-0">
+          {post.permalink ? (
+            <Button className="w-full h-12 text-base font-medium shadow-lg hover:shadow-primary/25 transition-all duration-300" asChild>
+              <a href={post.permalink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2">
+                Open on {post.platform}
+                <ExternalLink className="h-4 w-4 ml-1 opacity-70" />
+              </a>
+            </Button>
+          ) : (
+            <Button disabled variant="secondary" className="w-full h-12 opacity-50">
+              Link not available
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
   );
 }
 
-function StatCard({ icon: Icon, value, label, className }: any) {
+interface StatCardProps {
+  icon: LucideIcon;
+  value: number | string;
+  label: string;
+  color: string;
+  bg: string;
+  delay: number;
+}
+
+function StatCard({ icon: Icon, value, label, color, bg, delay }: StatCardProps) {
   return (
-    <div className={`flex flex-col p-3 border rounded-lg transition-colors ${className}`}>
-      <div className="flex items-center gap-2 mb-1 opacity-90">
-        <Icon className="h-3.5 w-3.5" />
-        <span className="text-xs font-medium">{label}</span>
+    <motion.div 
+      variants={itemVariants}
+      custom={delay}
+      whileHover={{ scale: 1.02, y: -2 }}
+      className="flex flex-col p-3.5 rounded-xl border border-border/40 bg-card hover:border-border/80 transition-colors relative overflow-hidden group"
+    >
+      <div className={`absolute top-0 right-0 p-2 opacity-10 group-hover:opacity-20 transition-opacity ${color}`}>
+        <Icon className="h-12 w-12" />
       </div>
-      <span className="text-xl font-bold tracking-tight">{value.toLocaleString()}</span>
-    </div>
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center mb-3 ${bg} ${color}`}>
+        <Icon className="h-4 w-4" />
+      </div>
+      <div className="space-y-0.5 z-10">
+        <span className="text-xs font-medium text-muted-foreground block">{label}</span>
+        <span className="text-lg font-bold tracking-tight font-mono">{value.toLocaleString()}</span>
+      </div>
+    </motion.div>
   );
 }
 
-function getEngagementColor(rate: number) {
-  if (rate >= 5) return "text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/40";
-  if (rate >= 2) return "text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-900/40";
-  return "text-gray-700 bg-gray-100 dark:text-gray-300 dark:bg-gray-800";
+function getEngagementVariant(rate: number): "default" | "secondary" | "destructive" | "outline" {
+  if (rate >= 5) return "default";
+  if (rate >= 2) return "secondary";
+  return "outline";
 }

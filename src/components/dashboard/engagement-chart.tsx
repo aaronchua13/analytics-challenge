@@ -335,6 +335,19 @@ const InnerChart = ({
   );
 };
 
+const generateEmptyStateData = () => {
+  return Array.from({ length: 7 }, (_, i) => ({
+    date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
+    engagement: 20 + Math.random() * 30,
+    reach: 40 + Math.random() * 40,
+    impressions: 0,
+    saves: 0,
+    shares: 0,
+    comments: 0,
+    likes: 0
+  }));
+};
+
 export default function EngagementChart({ data }: { data: DailyMetric[] }) {
   const { chartViewType, setChartViewType } = useDashboardStore();
   const {
@@ -349,18 +362,13 @@ export default function EngagementChart({ data }: { data: DailyMetric[] }) {
     scroll: true,
   });
 
+  const [emptyStateData, setEmptyStateData] = React.useState<DailyMetric[]>([]);
+
+  React.useEffect(() => {
+    setEmptyStateData(generateEmptyStateData());
+  }, []);
+
   if (!data || data.length === 0) {
-    // Generate dummy data for the empty state visualization
-    const emptyStateData = Array.from({ length: 7 }, (_, i) => ({
-      date: new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000).toISOString(),
-      engagement: 20 + Math.random() * 30,
-      reach: 40 + Math.random() * 40,
-      impressions: 0,
-      saves: 0,
-      shares: 0,
-      comments: 0,
-      likes: 0
-    }));
 
     return (
       <Card className="relative overflow-hidden">
