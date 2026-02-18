@@ -196,6 +196,7 @@ export default function PostsTable({
   const searchParams = useSearchParams();
   const { setSelectedPost, setIsModalOpen } = useDashboardStore();
   const [isPending, startTransition] = useTransition();
+  const tableRef = React.useRef<HTMLDivElement>(null);
 
   const handlePostClick = (post: Post) => {
     setSelectedPost(post);
@@ -266,6 +267,11 @@ export default function PostsTable({
     });
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
+      
+      // If page is changing, scroll to table top
+      if (updates.page) {
+        tableRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     });
   }, [router, pathname, searchParams]);
 
@@ -329,7 +335,7 @@ export default function PostsTable({
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full" ref={tableRef}>
       <div className="flex flex-col sm:flex-row items-center justify-between py-4 gap-4">
         <Input
           placeholder="Filter posts..."
