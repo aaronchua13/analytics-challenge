@@ -49,3 +49,10 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+### Sample Credentials
+
+You can use the following credentials to log in and explore the application with sample data:
+
+- **Email**: `aaronchua13@gmail.com`
+- **Password**: `123456`
