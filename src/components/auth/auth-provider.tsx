@@ -3,9 +3,11 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '@/store/auth-store'
 import { supabase } from '@/lib/supabase'
+import { usePathname } from 'next/navigation'
 
 export default function AuthProvider({ children }: { children: React.ReactNode }) {
   const { setSession, setLoading } = useAuthStore()
+  const pathname = usePathname()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -21,7 +23,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
     })
 
     return () => subscription.unsubscribe()
-  }, [setSession, setLoading])
+  }, [setSession, setLoading, pathname])
 
   return <>{children}</>
 }
